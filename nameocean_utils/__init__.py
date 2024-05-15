@@ -13,10 +13,10 @@ from pygelf import GelfUdpHandler
 
 class RiverRPC:
 
-    def __init__(self, server_name):
+    def __init__(self, server_name, redis_url=None, river_url=None):
         self.server_name = server_name
-        self.redis_url = os.getenv("REDIS_URL")
-        self.river_url = os.getenv("RIVER_URL")
+        self.redis_url = redis_url or os.getenv("REDIS_URL")
+        self.river_url = river_url or os.getenv("RIVER_URL")
         self.server = pyredisrpc.Server(server_name, redis_url=self.redis_url)
 
     def add_method(self, fn):
@@ -36,7 +36,7 @@ class RiverRPC:
             pass
 
 
-def get_task_logger(name, fname):
+def get_task_logger(name, fname, seq_url=None, seq_port=None):
     fmt = "%(asctime)s %(levelname)s:%(name)s:%(message)s"
     logging.basicConfig(
         level=logging.INFO,
@@ -45,8 +45,8 @@ def get_task_logger(name, fname):
     logger = logging.getLogger(name)
     logger.addHandler(
         GelfUdpHandler(
-            host=os.getenv("SEQ_URL"),
-            port=os.getenv("SEQ_PORT"),
+            host=seq_url or os.getenv("SEQ_URL"),
+            port=seq_port or os.getenv("SEQ_PORT"),
             _task=name,
             _function=fname,
         )
@@ -56,11 +56,8 @@ def get_task_logger(name, fname):
 
 
 def notify_discord(text, hook_url=None, username=None):
-    if not hook_url:
-        hook_url = os.getenv("DISCORD_HOOK")
-
-    if not username:
-        username = os.getenv("DISCORD_USERNAME")
+    hook_url = hook_url or os.getenv("DISCORD_HOOK")
+    username = username or os.getenv("DISCORD_USERNAME")
 
     stack = inspect.stack()
     # path = inspect.getabsfile(notify_discord)
