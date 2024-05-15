@@ -1,11 +1,58 @@
 import calendar
 import hashlib
 import inspect
+import logging
 import os
 from functools import reduce
 from typing import Tuple
 
+import pyredisrpc
 import requests
+from pygelf import GelfUdpHandler
+
+
+class RiverRPC:
+
+    def __init__(self, server_name):
+        self.server_name = server_name
+        self.redis_url = os.getenv("REDIS_URL")
+        self.river_url = os.getenv("RIVER_URL")
+        self.server = pyredisrpc.Server(server_name, redis_url=self.redis_url)
+
+    def add_method(self, fn):
+        self.register_method(fn)
+        self.server.method(fn)
+
+    def run(self):
+        self.server.run()
+
+    def register_method(self, fn):
+        try:
+            requests.get(
+                "%s?method=%s&server=%s"
+                % (self.river_url, fn.__name__, self.server_name)
+            )
+        except Exception:
+            pass
+
+
+def get_task_logger(name, fname):
+    fmt = "%(asctime)s %(levelname)s:%(name)s:%(message)s"
+    logging.basicConfig(
+        level=logging.INFO,
+        format=fmt,
+    )
+    logger = logging.getLogger(name)
+    logger.addHandler(
+        GelfUdpHandler(
+            host=os.getenv("SEQ_URL"),
+            port=os.getenv("SEQ_PORT"),
+            _task=name,
+            _function=fname,
+        )
+    )
+
+    return logger
 
 
 def notify_discord(text, hook_url=None, username=None):
@@ -73,9 +120,11 @@ def getter(obj, *args, default=None):
     for arg in args:
         try:
             return reduce(
-                lambda a, b: a[int(b)]
-                if b.isdigit()
-                else (getattr(a, b) if hasattr(a, b) else a[b]),
+                lambda a, b: (
+                    a[int(b)]
+                    if b.isdigit()
+                    else (getattr(a, b) if hasattr(a, b) else a[b])
+                ),
                 arg.split("."),
                 obj,
             )
@@ -90,7 +139,7 @@ def qsort_attr(ls, attr):
         return ls
 
     pivot = ls.pop()
-    left = [l for l in ls if l[attr] <= pivot[attr]]
-    right = [l for l in ls if l[attr] > pivot[attr]]
+    left = [elm for elm in ls if elm[attr] <= pivot[attr]]
+    right = [elm for elm in ls if elm[attr] > pivot[attr]]
 
     return qsort_attr(left, attr) + [pivot] + qsort_attr(right, attr)
