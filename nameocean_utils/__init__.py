@@ -36,7 +36,7 @@ class RiverRPC:
             pass
 
 
-def get_task_logger(name, fname, seq_url=None, seq_port=None):
+def get_task_logger(name, fname, seq_host=None, seq_port=None):
     fmt = "%(asctime)s %(levelname)s:%(name)s:%(message)s"
     logging.basicConfig(
         level=logging.INFO,
@@ -45,7 +45,7 @@ def get_task_logger(name, fname, seq_url=None, seq_port=None):
     logger = logging.getLogger(name)
     logger.addHandler(
         GelfUdpHandler(
-            host=seq_url or os.getenv("SEQ_URL"),
+            host=seq_host or os.getenv("SEQ_HOST"),
             port=seq_port or os.getenv("SEQ_PORT"),
             _task=name,
             _function=fname,
