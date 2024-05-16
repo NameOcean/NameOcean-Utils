@@ -46,12 +46,11 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
     logger.addHandler(
         GelfUdpHandler(
             host=seq_host or os.getenv("SEQ_HOST"),
-            port=seq_port or os.getenv("SEQ_PORT"),
+            port=int(seq_port or os.getenv("SEQ_PORT")),
             _task=name,
             _function=fname,
         )
     )
-
     return logger
 
 
