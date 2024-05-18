@@ -19,8 +19,9 @@ class RiverRPC:
         self.river_url = river_url or os.getenv("RIVER_URL")
         self.server = pyredisrpc.Server(server_name, redis_url=self.redis_url)
 
-    def add_method(self, fn):
-        self.register_method(fn)
+    def add_method(self, fn, register=True):
+        if register:
+            self.register_method(fn)
         self.server.method(fn)
 
     def run(self):
