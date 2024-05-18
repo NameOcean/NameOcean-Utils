@@ -55,6 +55,16 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
     return logger
 
 
+def river_task(func):
+    def inner(**kwargs):
+        kwargs["logger"] = get_task_logger(
+            "task-%s" % kwargs.get("task_id", "0"), func.__name__
+        )
+        func(**kwargs)
+
+    return inner
+
+
 def notify_discord(text, hook_url=None, username=None):
     hook_url = hook_url or os.getenv("DISCORD_HOOK")
     username = username or os.getenv("DISCORD_USERNAME")
