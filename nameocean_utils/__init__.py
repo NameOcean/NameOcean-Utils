@@ -15,28 +15,27 @@ from arq.worker import Worker
 from pygelf import GelfUdpHandler
 
 
+def get_redis_settings():
+    return RedisSettings(
+        host=os.getenv("REDIS_HOST"),
+        port=os.getenv("REDIS_PORT"),
+        database=os.getenv("REDIS_DB"),
+        username=os.getenv("REDIS_USER"),
+        password=os.getenv("REDIS_PASS"),
+        conn_timeout=5,
+        conn_retries=10,
+        retry_on_timeout=True,
+    )
+
+
 class ArqRPC:
 
     def __init__(
         self,
         queue_name,
-        redis_host=None,
-        redis_port=None,
-        redis_db=0,
-        redis_username=None,
-        redis_password=None,
     ):
         self.queue_name = queue_name
-        self.redis_settings = RedisSettings(
-            host=redis_host or os.getenv("REDIS_HOST"),
-            port=redis_port or os.getenv("REDIS_PORT"),
-            database=redis_db or os.getenv("REDIS_DB"),
-            username=redis_username or os.getenv("REDIS_USER"),
-            password=redis_password or os.getenv("REDIS_PASS"),
-            conn_timeout=5,
-            conn_retries=10,
-            retry_on_timeout=True,
-        )
+        self.redis_settings = get_redis_settings()
         self.functions = []
         self.worker = None
         logging.config.dictConfig(default_log_config(True))
