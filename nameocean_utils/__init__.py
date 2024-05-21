@@ -2,13 +2,71 @@ import calendar
 import hashlib
 import inspect
 import logging
+import logging.config
 import os
 from functools import reduce
 from typing import Tuple
 
 import pyredisrpc
 import requests
+from arq.connections import RedisSettings
+from arq.logs import default_log_config
+from arq.worker import Worker
 from pygelf import GelfUdpHandler
+
+
+class ArqRPC:
+
+    def __init__(
+        self,
+        queue_name,
+        redis_host=None,
+        redis_port=None,
+        redis_db=0,
+        redis_username=None,
+        redis_password=None,
+    ):
+        self.queue_name = queue_name
+        self.redis_settings = RedisSettings(
+            host=redis_host or os.getenv("REDIS_HOST"),
+            port=redis_port or os.getenv("REDIS_PORT"),
+            database=redis_db or os.getenv("REDIS_DB"),
+            username=redis_username or os.getenv("REDIS_USER"),
+            password=redis_password or os.getenv("REDIS_PASS"),
+            conn_timeout=5,
+            conn_retries=10,
+            retry_on_timeout=True,
+        )
+        self.functions = []
+        self.worker = None
+        logging.config.dictConfig(default_log_config(True))
+
+    def add_method(self, fn, register=True):
+        self.functions.append(fn)
+        if register:
+            self.register_method(fn)
+
+    def register_method(self, fn):
+        try:
+            requests.get(
+                "%s?method=%s&server=%s"
+                % (self.river_url, fn.__name__, self.server_name)
+            )
+        except Exception:
+            pass
+
+    def get_worker(self):
+        if self.worker is None:
+            self.worker = Worker(
+                functions=self.functions,
+                queue_name=self.queue_name,
+                redis_settings=self.redis_settings,
+            )
+
+        return self.worker
+
+    def run(self):
+        self.get_worker().run()
 
 
 class RiverRPC:
@@ -56,11 +114,11 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
 
 
 def river_task(func):
-    def task(**kwargs):
+    def task(*args, **kwargs):
         kwargs["logger"] = get_task_logger(
             "task-%s" % kwargs.get("task_id", "0"), func.__name__
         )
-        func(**kwargs)
+        func(*args, **kwargs)
 
     task.__name__ = func.__name__
 
