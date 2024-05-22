@@ -117,7 +117,19 @@ def river_task(func):
         kwargs["logger"] = get_task_logger(
             "task-%s" % kwargs.get("task_id", "0"), func.__name__
         )
-        func(*args, **kwargs)
+        return func(*args, **kwargs)
+
+    task.__name__ = func.__name__
+
+    return task
+
+
+def arq_task(func):
+    async def task(*args, **kwargs):
+        kwargs["logger"] = get_task_logger(
+            "task-%s" % kwargs.get("task_id", "0"), func.__name__
+        )
+        return await func(*args, **kwargs)
 
     task.__name__ = func.__name__
 
