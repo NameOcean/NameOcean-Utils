@@ -45,15 +45,19 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
         format=fmt,
     )
     logger = logging.getLogger(name)
-    logger.addHandler(
-        GelfUdpHandler(
-            host=seq_host or os.getenv("SEQ_HOST"),
-            port=int(seq_port or os.getenv("SEQ_PORT")),
-            _task=name,
-            _function=fname,
-            _app="river",
-        )
+    logger_exists = any(
+        map(lambda x: getter(x, "additional_fields._task") == name, logger.handlers)
     )
+    if not logger_exists:
+        logger.addHandler(
+            GelfUdpHandler(
+                host=seq_host or os.getenv("SEQ_HOST"),
+                port=int(seq_port or os.getenv("SEQ_PORT")),
+                _task=name,
+                _function=fname,
+                _app="river",
+            )
+        )
     return logger
 
 
