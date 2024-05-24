@@ -51,6 +51,7 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
             port=int(seq_port or os.getenv("SEQ_PORT")),
             _task=name,
             _function=fname,
+            _app="river",
         )
     )
     return logger
