@@ -60,6 +60,7 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
             GelfUdpHandler(
                 host=seq_host or os.getenv("SEQ_HOST"),
                 port=int(seq_port or os.getenv("SEQ_PORT")),
+                chunk_size=500,
                 _task=name,
                 _function=fname,
                 _app="river",
