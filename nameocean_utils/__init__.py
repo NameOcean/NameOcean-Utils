@@ -48,6 +48,10 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
     logger_exists = any(
         map(lambda x: getter(x, "additional_fields._task") == name, logger.handlers)
     )
+    file_handler = logging.FileHandler("/var/logs/task-%s.logs" % name)
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(fmt)
+
     if not logger_exists:
         logger.addHandler(
             GelfUdpHandler(
@@ -58,6 +62,8 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
                 _app="river",
             )
         )
+        logger.addHandler(file_handler)
+    logger.setLevel(logging.INFO)
     return logger
 
 
