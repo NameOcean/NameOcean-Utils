@@ -4,6 +4,7 @@ import inspect
 import logging
 import logging.config
 import os
+from decimal import Decimal
 from functools import reduce
 from pathlib import Path
 from typing import Tuple
@@ -168,3 +169,8 @@ def qsort_attr(ls, attr):
     right = [elm for elm in ls if elm[attr] > pivot[attr]]
 
     return qsort_attr(left, attr) + [pivot] + qsort_attr(right, attr)
+
+
+def bytesto(bytes, to, bsize=1024):
+    a = {"k": 1, "m": 2, "g": 3, "t": 4, "p": 5, "e": 6}
+    return Decimal(bytes) / Decimal(bsize ** a[to])
