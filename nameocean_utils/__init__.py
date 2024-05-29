@@ -4,6 +4,7 @@ import inspect
 import logging
 import logging.config
 import os
+import traceback
 from decimal import Decimal
 from functools import reduce
 from pathlib import Path
@@ -74,10 +75,14 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
 
 def river_task(func):
     def task(*args, **kwargs):
-        kwargs["logger"] = get_task_logger(
-            "task-%s" % kwargs.get("task_id", "0"), func.__name__
-        )
-        return func(*args, **kwargs)
+        logger = get_task_logger("task-%s" % kwargs.get("task_id", "0"), func.__name__)
+        kwargs["logger"] = logger
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            tb = traceback.TracebackException.from_exception(e).format()
+            logger.error(tb)
+            return {"error": tb}
 
     task.__name__ = func.__name__
 
