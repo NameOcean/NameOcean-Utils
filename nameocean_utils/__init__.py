@@ -5,6 +5,7 @@ import logging
 import logging.config
 import os
 import traceback
+from contextlib import closing
 from decimal import Decimal
 from functools import reduce
 from pathlib import Path
@@ -17,13 +18,13 @@ from pygelf import GelfUdpHandler
 
 
 def get_service(services):
-    sock = socket(AF_INET, SOCK_STREAM)
     for hostname, port in services:
-        result = sock.connect_ex((hostname, port))
-        if result == 0:
-            return (hostname, port)
+        with closing(socket(AF_INET, SOCK_STREAM)) as sock:
+            sock.settimeout(2)
+            if sock.connect_ex((hostname, port)) == 0:
+                return (hostname, port)
 
-    raise Exception("Can't connect to service")
+    raise Exception("Unable to connect to any of the following services: %s" % services)
 
 
 class RiverRPC:
