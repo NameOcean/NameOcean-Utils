@@ -16,7 +16,7 @@ import requests
 from pygelf import GelfUdpHandler
 
 
-def get_service(*services):
+def get_service(services):
     sock = socket(AF_INET, SOCK_STREAM)
     for hostname, port in services:
         result = sock.connect_ex((hostname, port))
