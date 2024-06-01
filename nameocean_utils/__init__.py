@@ -18,10 +18,10 @@ from pygelf import GelfUdpHandler
 
 def get_service(*services):
     sock = socket(AF_INET, SOCK_STREAM)
-    for service in services:
-        result = sock.connect_ex(service)
+    for hostname, port in services:
+        result = sock.connect_ex((hostname, port))
         if result == 0:
-            return service
+            return (hostname, port)
 
     raise Exception("Can't connect to service")
 
