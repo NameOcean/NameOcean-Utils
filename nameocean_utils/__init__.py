@@ -8,11 +8,22 @@ import traceback
 from decimal import Decimal
 from functools import reduce
 from pathlib import Path
+from socket import AF_INET, SOCK_STREAM, socket
 from typing import Tuple
 
 import pyredisrpc
 import requests
 from pygelf import GelfUdpHandler
+
+
+def get_service(*services):
+    sock = socket(AF_INET, SOCK_STREAM)
+    for service in services:
+        result = sock.connect_ex(service)
+        if result == 0:
+            return service
+
+    raise Exception("Can't connect to service")
 
 
 class RiverRPC:
