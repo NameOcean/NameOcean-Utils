@@ -78,11 +78,12 @@ def get_logger(name, verbose=True):
     return logging.getLogger(name)
 
 
-def get_task_logger(name, fname, seq_host=None, seq_port=None):
+def get_task_logger(name, fname, seq_host=None, seq_port=None, skip_file_logger=False):
     fmt = "%(asctime)s %(levelname)s:%(name)s:%(message)s"
     logging.basicConfig(
         level=logging.INFO,
         format=fmt,
+        datefmt="%d-%m-%Y %H:%M:%S",
     )
     logger = logging.getLogger(name)
     logger_exists = any(
@@ -105,7 +106,8 @@ def get_task_logger(name, fname, seq_host=None, seq_port=None):
                 _app="river",
             )
         )
-        logger.addHandler(file_handler)
+        if not skip_file_logger:
+            logger.addHandler(file_handler)
     logger.setLevel(logging.INFO)
     return logger
 
