@@ -7,5 +7,5 @@ setup(
     author_email="serdar@yuix.org",
     license="GNU",
     packages=["nameocean_utils"],
-    install_requires=["requests", "pyredisrpc", "pygelf"],
+    install_requires=["requests", "pyredisrpc", "seqlog"],
 )

@@ -8,13 +8,12 @@ import traceback
 from contextlib import closing
 from decimal import Decimal
 from functools import reduce
-from pathlib import Path
-from socket import AF_INET, SOCK_STREAM, socket
+from socket import AF_INET, SOCK_STREAM, gethostname, socket
 from typing import Tuple
 
 import pyredisrpc
 import requests
-from pygelf import GelfUdpHandler
+import seqlog
 
 
 def get_service(services):
@@ -78,38 +77,20 @@ def get_logger(name, verbose=True):
     return logging.getLogger(name)
 
 
-def get_task_logger(name, fname, seq_host=None, seq_port=None, skip_file_logger=False):
-    fmt = "%(asctime)s %(levelname)s:%(name)s:%(message)s"
-    logging.basicConfig(
+def get_task_logger(name, fname, **kwargs):
+    seqlog.log_to_seq(
+        server_url=os.environ.get("SEQ_URL"),
+        api_key=os.environ.get("SEQ_KEY"),
         level=logging.INFO,
-        format=fmt,
-        datefmt="%d-%m-%Y %H:%M:%S",
+        batch_size=5,
+        auto_flush_timeout=3,  # seconds
+        override_root_logger=False,
+        support_extra_properties=True,
     )
-    logger = logging.getLogger(name)
-    logger_exists = any(
-        map(lambda x: getter(x, "additional_fields._task") == name, logger.handlers)
-    )
-    file_path = "/var/log/task-%s.logs" % name
-    Path(file_path).touch()
-    file_handler = logging.FileHandler(file_path)
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(fmt)
 
-    if not logger_exists:
-        logger.addHandler(
-            GelfUdpHandler(
-                host=seq_host or os.getenv("SEQ_HOST"),
-                port=int(seq_port or os.getenv("SEQ_PORT")),
-                chunk_size=500,
-                _task=name,
-                _function=fname,
-                _app="river",
-            )
-        )
-        if not skip_file_logger:
-            logger.addHandler(file_handler)
-    logger.setLevel(logging.INFO)
-    return logger
+    seqlog.set_global_log_properties(task=name, app="river", hostname=gethostname())
+
+    return logging.getLogger(fname)
 
 
 def river_task(func):
