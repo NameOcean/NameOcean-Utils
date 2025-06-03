@@ -27,7 +27,6 @@ def get_service(services):
 
 
 class RiverRPC:
-
     def __init__(self, server_name, redis_url=None, river_url=None):
         self.server_name = server_name
         self.redis_url = redis_url or os.getenv("REDIS_URL")
@@ -137,6 +136,13 @@ def hash32(str, length=32):
 
 def get_month_name(month: int) -> Tuple[str, str]:
     return calendar.month_name[month], calendar.month_abbr[month]
+
+
+def first_match(lst, predicate):
+    for item in lst:
+        if predicate(item):
+            return item
+    return None
 
 
 def grep(text, match, after=0, before=0, ind=False):
