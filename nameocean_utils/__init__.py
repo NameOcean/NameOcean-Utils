@@ -99,7 +99,7 @@ def river_task(func):
         try:
             return func(*args, **kwargs)
         except Exception as e:
-            tb = traceback.TracebackException.from_exception(e).format()
+            tb = "".join(traceback.TracebackException.from_exception(e).format())
             logger.error(tb)
             return {"error": tb}
 
