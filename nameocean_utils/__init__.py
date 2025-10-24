@@ -83,7 +83,7 @@ def get_task_logger(name, fname, **kwargs):
         level=logging.INFO,
         batch_size=5,
         auto_flush_timeout=3,  # seconds
-        override_root_logger=False,
+        override_root_logger=True,
         support_extra_properties=True,
     )
 
