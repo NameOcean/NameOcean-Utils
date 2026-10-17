@@ -8,39 +8,8 @@ from decimal import Decimal
 from functools import reduce
 from socket import gethostname
 
-import pyredisrpc
 import requests
 import seqlog
-
-
-class RiverRPC:
-    def __init__(self, server_name, redis_url=None, river_url=None):
-        self.server_name = server_name
-        self.redis_url = redis_url or os.getenv("REDIS_URL")
-        self.river_url = river_url or os.getenv("RIVER_URL")
-        self.server = pyredisrpc.Server(server_name, redis_url=self.redis_url)
-
-        def test_connection():
-            return True
-
-        self.server.method(test_connection)
-
-    def add_method(self, fn, register=True):
-        if register:
-            self.register_method(fn)
-        self.server.method(fn)
-
-    def run(self):
-        self.server.run()
-
-    def register_method(self, fn):
-        try:
-            requests.get(
-                "%s?method=%s&server=%s"
-                % (self.river_url, fn.__name__, self.server_name)
-            )
-        except Exception:
-            pass
 
 
 def get_logger(name, verbose=True):

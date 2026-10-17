@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name="nameocean-utils",
-    version="0.2.0",
+    version="0.3.0",
     author="serdarakarca",
     author_email="serdar@yuix.org",
     license="GNU",
     packages=["nameocean_utils"],
-    install_requires=["requests", "seqlog", "pyredisrpc"],
+    install_requires=["requests", "seqlog"],
 )
