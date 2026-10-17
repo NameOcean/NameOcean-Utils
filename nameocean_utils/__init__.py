@@ -1,29 +1,16 @@
-import calendar
 import hashlib
 import inspect
 import logging
 import logging.config
 import os
 import traceback
-from contextlib import closing
 from decimal import Decimal
 from functools import reduce
-from socket import AF_INET, SOCK_STREAM, gethostname, socket
-from typing import Tuple
+from socket import gethostname
 
 import pyredisrpc
 import requests
 import seqlog
-
-
-def get_service(services):
-    for hostname, port in services:
-        with closing(socket(AF_INET, SOCK_STREAM)) as sock:
-            sock.settimeout(2)
-            if sock.connect_ex((hostname, port)) == 0:
-                return (hostname, port)
-
-    raise Exception("Unable to connect to any of the following services: %s" % services)
 
 
 class RiverRPC:
@@ -137,45 +124,6 @@ def notify_discord(text, hook_url=None, username=None):
 
 def hash32(str, length=32):
     return hashlib.sha224(str.encode("utf-8")).hexdigest()[:length]
-
-
-def get_month_name(month: int) -> Tuple[str, str]:
-    return calendar.month_name[month], calendar.month_abbr[month]
-
-
-def first_match(lst, predicate):
-    for item in lst:
-        if predicate(item):
-            return item
-    return None
-
-
-def grep(text, match, after=0, before=0, ind=False):
-    """
-    Return matched lines in given text as a list. Similar to grep function but a simple one.
-    """
-    idx = []
-    if type(text) is str:
-        lines = text.split("\n")
-    else:
-        lines = text
-
-    for i, line in enumerate(lines):
-        if str(match) not in line:
-            continue
-
-        idx.append(i)
-        if after:
-            idx += range(i + 1, i + 1 + after)
-        if before:
-            idx += range(i - before, i)
-
-    idx = sorted(list(set(idx)))
-
-    if ind:
-        return idx
-
-    return [lines[i] for i in idx]
 
 
 def getter(obj, *args, default=None):

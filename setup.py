@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="nameocean-utils",
-    version="0.1.0",
+    version="0.2.0",
     author="serdarakarca",
     author_email="serdar@yuix.org",
     license="GNU",
