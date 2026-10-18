@@ -1,7 +1,6 @@
 import hashlib
 import inspect
 import logging
-import logging.config
 import os
 import traceback
 from decimal import Decimal
@@ -10,31 +9,6 @@ from socket import gethostname
 
 import requests
 import seqlog
-
-
-def get_logger(name, verbose=True):
-    log_level = "DEBUG" if verbose else "INFO"
-    log_config = {
-        "version": 1,
-        "disable_existing_loggers": False,
-        "handlers": {
-            "rpc.standard": {
-                "level": log_level,
-                "class": "logging.StreamHandler",
-                "formatter": "rpc.standard",
-            }
-        },
-        "formatters": {
-            "rpc.standard": {
-                "format": "%(asctime)s %(module)s: %(message)s",
-                "datefmt": "%d-%m-%Y %H:%M:%S",
-            }
-        },
-        "loggers": {"rpc": {"handlers": ["rpc.standard"], "level": log_level}},
-    }
-
-    logging.config.dictConfig(log_config)
-    return logging.getLogger(name)
 
 
 def get_task_logger(name, fname, **kwargs):
